@@ -19,7 +19,30 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth auth;
 
-    private ImageView exercices, suivi, regime, calendrier, chat, forum, geo, compte, imc, alarm;
+    private ImageView exercices, suivi, regime, geo, compte, imc, alarm;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //Get firebase auth instance
+        auth = FirebaseAuth.getInstance();
+
+        //get current user
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    // user auth state is changed - user is null
+                    // launch login activity
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                }
+            }
+        };
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         suivi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
+                startActivity(new Intent(MainActivity.this, suiviActivity.class));
             }
         });
 
@@ -66,32 +89,7 @@ public class MainActivity extends AppCompatActivity {
         regime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
-            }
-        });
-
-        calendrier = (ImageView) findViewById(R.id.calendrier);
-        calendrier.setOnClickListener(new View.OnClickListener() {
-            @Override
-
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
-            }
-        });
-
-        chat = (ImageView) findViewById(R.id.chat);
-        chat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
-            }
-        });
-
-        forum =  (ImageView) findViewById(R.id.forum);
-        forum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
+                startActivity(new Intent(MainActivity.this, NutritionActivity.class));
             }
         });
 

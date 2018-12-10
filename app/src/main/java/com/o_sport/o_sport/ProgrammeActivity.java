@@ -23,6 +23,8 @@ import static android.support.constraint.Constraints.TAG;
 public class ProgrammeActivity extends AppCompatActivity {
 
     private LinearLayout linearLayout;
+    ArrayList<String> progNames;
+    WrapperFireBase wrapperFireBase;
 
 
 
@@ -32,29 +34,45 @@ public class ProgrammeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_programme);
 
         linearLayout = findViewById(R.id.linearLayout);
+        progNames = new ArrayList<>();
+        Button button = findViewById(R.id.addProg);
+        wrapperFireBase = new WrapperFireBase();
 
-        FirebaseDatabase.getInstance().getReference("programme").addValueEventListener(new ValueEventListener() {
+        button.setText("Ajouter un nouveau programme");
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), createProgrammeActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        wrapperFireBase.getProgRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     String nom = (String) data.child("nom").getValue();
-                    Map exercices = (Map) data.child("exercices").getValue();
-                    final Programme programme = new Programme(nom, exercices);
+                    if(!progNames.contains(nom)){
 
-                    Button button = new Button(ProgrammeActivity.this);
+                        progNames.add(nom);
+                        Map exercices = (Map) data.child("exercices").getValue();
+                        final Programme programme = new Programme(nom, exercices);
 
-                    button.setText(programme.getNom());
-                    linearLayout.addView(button);
-                    button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(getBaseContext(), ExerciceActivity.class);
-                            intent.putExtra("PROGRAMME", programme);
-                            startActivity(intent);
-                        }
-                    });
+                        Button button = new Button(ProgrammeActivity.this);
+
+                        button.setText(programme.getNom());
+                        linearLayout.addView(button);
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(getBaseContext(), ExerciceActivity.class);
+                                intent.putExtra("PROGRAMME", programme);
+                                startActivity(intent);
+                            }
+                        });
+                    }
                 }
             }
 

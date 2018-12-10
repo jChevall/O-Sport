@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -40,16 +41,50 @@ public class ExerciceActivity extends AppCompatActivity {
     TextView textView;
     ImageView imageView;
     Button button;
+    Button share;
     StorageReference storageRef;
+    WrapperFireBase wrapperFireBase;
+    User user;
+
+    int pointWon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exercice);
 
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            //Go to login
+            startActivity(new Intent(ExerciceActivity.this, LoginActivity.class));
+        }
+
+        final String mail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
+        FirebaseDatabase.getInstance().getReference("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    if(data.child("email").getValue().equals(mail)){
+                        Map imc = (Map) data.child("imc").getValue();
+                        String id = data.getKey();
+                        Number pointNumber = (Number) data.child("point").getValue();
+                        Integer point = pointNumber.intValue();
+                        user = new User(mail, point, imc, id);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+
         textView = findViewById(R.id.titre);
         imageView = findViewById(R.id.tuto);
         button = findViewById(R.id.next);
+        share = findViewById(R.id.share);
 
         programme = (Programme) getIntent().getSerializableExtra("PROGRAMME");
         exercices = new ArrayList<Exercice>();
@@ -92,18 +127,38 @@ public class ExerciceActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(exercices.size() == compteur+1){
-                    int point = 0;
+                if(exercices.size() == compteur+1 || exercices.size()==1){
+                    pointWon = 0;
                     for(Exercice exo : exercices){
-                        point += exo.getPoint().intValue();
+                        pointWon += exo.getPoint().intValue();
                     }
-                    String view = "Bravo, vous avez terminé, vous avez gagné "+point+" point(s)";
+                    String view = "Bravo, vous avez terminé, vous avez gagné "+pointWon+" point(s)";
+                    user.addpoint(pointWon);
                     textView.setText(view);
+
+                    // Update User
+                    FirebaseDatabase.getInstance().getReference("user").child(user.getId()).updateChildren(user.toMap());
+
                     Context context = imageView.getContext();
                     int id = context.getResources().getIdentifier("bravo", "drawable", context.getPackageName());
                     imageView.setImageResource(id);
                     button.setVisibility(View.INVISIBLE);
+
+                    share.setVisibility(View.VISIBLE);
+                    share.setOnClickListener(new View.OnClickListener(){
+                        @Override
+                        public void onClick(View v){
+                            Intent myIntent = new Intent(Intent.ACTION_SEND);
+                            myIntent.setType("text/plain");
+                            String shareBody = "J'ai gagné " + pointWon +" point sur O-Sport aujourd'hui !";
+                            myIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
+                            startActivity(Intent.createChooser(myIntent,"Share using"));
+                        }
+                    });
+
+
                 }else{
+
 
                     textView.setText(exercices.get(compteur).getNom());
                     Context context = imageView.getContext();

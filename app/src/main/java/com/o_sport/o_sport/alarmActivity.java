@@ -5,6 +5,8 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextClock;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -15,6 +17,8 @@ public class alarmActivity extends AppCompatActivity {
 
     TimePicker alarmTime;
     TextClock currentTime;
+    Button stop;
+    Timer t;
 
 
     @Override
@@ -24,9 +28,10 @@ public class alarmActivity extends AppCompatActivity {
 
         alarmTime = findViewById(R.id.timePicker);
         currentTime = findViewById(R.id.textClock);
+        stop = findViewById(R.id.stop);
         final Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
 
-        Timer t = new Timer();
+        t = new Timer();
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -46,6 +51,14 @@ public class alarmActivity extends AppCompatActivity {
 
             }
         }, 0, 1000);
+
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ringtone.stop();
+                t.cancel();
+            }
+        });
 
     }
 

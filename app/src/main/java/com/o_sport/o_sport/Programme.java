@@ -1,5 +1,7 @@
 package com.o_sport.o_sport;
 
+import com.google.firebase.database.Exclude;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -27,8 +29,23 @@ public class Programme implements Serializable {
         return exercices;
     }
 
-    public void setExercices(Map exercices) {
-        this.exercices = exercices;
+
+    public void addExercie(String nom){
+        String key = "exo" + this.exercices.size();
+        this.exercices.put(key, nom);
     }
 
+    public void removeExercice(String nom){
+        if(this.exercices.containsValue(nom)){
+            this.exercices.values().remove(nom);
+        }
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("nom", this.nom);
+        result.put("exercices", this.exercices);
+        return result;
+    }
 }

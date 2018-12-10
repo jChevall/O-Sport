@@ -65,7 +65,16 @@
         <activity android:name=".ProgrammeActivity" />
         <activity android:name=".ExerciceActivity" />
         <activity android:name=".alarmActivity" />
-        <activity android:name=".ImcActivity"></activity>
+        <activity android:name=".ImcActivity" />
+        <activity
+            android:name=".createProgrammeActivity"
+            android:label="@string/title_activity_create_programme"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".suiviActivity"
+            android:label="@string/title_activity_suivi"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".NutritionActivity"></activity>
     </application>
 
 </manifest>

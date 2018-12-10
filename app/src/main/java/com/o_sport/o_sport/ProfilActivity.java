@@ -15,6 +15,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Map;
 
 public class ProfilActivity extends AppCompatActivity {
 
@@ -25,11 +30,14 @@ public class ProfilActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth auth;
+    private WrapperFireBase wrapperFireBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profil);
+
+        wrapperFireBase = new WrapperFireBase();
 
         //get firebase auth instance
         auth = FirebaseAuth.getInstance();
@@ -214,6 +222,21 @@ public class ProfilActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
+                                        wrapperFireBase.getUserRef().addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                for (DataSnapshot data : dataSnapshot.getChildren()){
+                                                    if(data.child("email").getValue().equals(user.getEmail())){
+                                                        wrapperFireBase.getUserRef().child(data.getKey()).removeValue();
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        });
                                         Toast.makeText(ProfilActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
                                         startActivity(new Intent(ProfilActivity.this, SignupActivity.class));
                                         finish();
@@ -224,6 +247,7 @@ public class ProfilActivity extends AppCompatActivity {
                                     }
                                 }
                             });
+
                 }
             }
         });
